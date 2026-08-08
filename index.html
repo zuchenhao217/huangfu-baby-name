@@ -142,6 +142,28 @@ h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0; }
   line-height: 1.5;
 }
 .actions { display: flex; gap: 8px; margin-top: auto; }
+.detail-toggle { align-self: flex-start; }
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #f6faf8;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  padding: 12px;
+}
+.detail[hidden] { display: none; }
+.fit-row { display: flex; align-items: center; gap: 8px; }
+.fit-badge {
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.fit-high { background: #dff3ea; color: #146c54; }
+.fit-mid { background: #eef4f1; color: #2f6b5d; }
+.fit-low { background: #fdeeea; color: #a34a36; }
+.detail p { margin: 0; font-size: 12px; color: #40534e; line-height: 1.6; }
+.detail strong { color: #22302d; font-weight: 500; }
 button {
   min-height: 34px;
   border: 1px solid #c9d6d2;
@@ -262,7 +284,7 @@ button.is-picked {
   </header>
 
   <section class="summary" aria-label="概览">
-    <div class="stat"><span id="count">52</span><small>候选</small></div>
+    <div class="stat"><span id="count">92</span><small>候选</small></div>
     <div class="stat"><span id="pickedCount">0</span><small>已选</small></div>
     <div class="fullname">
       <div class="fullname-main"><span>全名</span><strong id="fullnameText">—</strong></div>
@@ -350,8 +372,103 @@ const NAMES = [
   { n: "清禾", g: "女", py: "qīng hé", src: "《楚辞》沧浪之水清兮 + 《诗经》十月纳禾稼", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, rec: true, note: "清水润禾，秋成可期；禾字贴合马年民俗。" },
   { n: "沁澜", g: "女", py: "qìn lán", src: "沁润 + 《孟子》观水必观其澜", tags: ["文雅", "大气", "清新"], sc: [5, 5, 4, 5, 4, 4], horse: false, note: "水象调候；澜字稍繁但规范。" },
   { n: "清和", g: "女", py: "qīng hé", src: "谢灵运· 首夏犹清和，芳草亦未歇", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, rec: true, note: "清明和暖；与清禾同音，取意不同。" },
-  { n: "清澜", g: "女", py: "qīng lán", src: "《楚辞》沧浪之水清兮 + 《孟子》观水必观其澜", tags: ["文雅", "大气", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, rec: true, note: "清波微澜；口音与清兰相同，意象皆美。" }
+  { n: "清澜", g: "女", py: "qīng lán", src: "《楚辞》沧浪之水清兮 + 《孟子》观水必观其澜", tags: ["文雅", "大气", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, rec: true, note: "清波微澜；口音与清兰相同，意象皆美。" },
+  { n: "清涟", g: "女", py: "qīng lián", src: "周敦颐《爱莲说》· 濯清涟而不妖", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "高", fitText: "清、涟皆水象，正合己土喜水润局；典据直接可查。" },
+  { n: "清宁", g: "女", py: "qīng níng", src: "《道德经》· 天得一以清，地得一以宁", tags: ["文雅", "稳重", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "高", fitText: "清为水润，宁为安定；水润燥土，气韵平和。" },
+  { n: "清晏", g: "女", py: "qīng yàn", src: "河清海晏", tags: ["文雅", "大气", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "清为水象，晏为安和；清晏有河清海晏之象。" },
+  { n: "清漪", g: "女", py: "qīng yī", src: "《诗经·魏风·伐檀》· 河水清且涟猗", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "高", fitText: "漪为水波，与水相生；清漪即清波微漾。" },
+  { n: "清源", g: "女", py: "qīng yuán", src: "朱熹《观书有感》· 为有源头活水来", tags: ["文雅", "大气", "书卷"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "高", fitText: "源为水源，活水意象，契合调候润局。" },
+  { n: "清川", g: "女", py: "qīng chuān", src: "《楚辞·渔父》· 沧浪之水清兮", tags: ["自然", "大气", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "高", fitText: "川为水流，清川即清流；水象直接。" },
+  { n: "清露", g: "女", py: "qīng lù", src: "古诗· 清露晨流", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "露为水气凝成，清露润物，契合润局。" },
+  { n: "沐禾", g: "女", py: "mù hé", src: "《诗经·小雅·采绿》· 薄言归沐 + 禾稼", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沐为水润，禾为嘉谷；水润禾生，兼合马年禾谷民俗。" },
+  { n: "沁禾", g: "女", py: "qìn hé", src: "沁润 + 禾稼", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沁为水渗，禾为谷；水润禾苗，意象清新生机。" },
+  { n: "澄禾", g: "女", py: "chéng hé", src: "澄水 + 禾稼", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "澄为水清，禾为嘉谷；清润与收成并见。" },
+  { n: "泽禾", g: "女", py: "zé hé", src: "恩泽 + 禾稼", tags: ["自然", "大气", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "泽为水泽，禾为嘉谷；恩泽润禾，意象温和。" },
+  { n: "雨禾", g: "女", py: "yǔ hé", src: "雨润禾苗", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 3, 4, 4], horse: true, fit: "高", fitText: "雨为水象，禾为谷；雨润禾生，直接应调候。" },
+  { n: "溪禾", g: "女", py: "xī hé", src: "溪水禾苗", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 3, 4, 4], horse: true, fit: "高", fitText: "溪为水，禾为谷；溪润禾苗，自然清秀。" },
+  { n: "露禾", g: "女", py: "lù hé", src: "晨露禾苗", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 3, 4, 4], horse: true, fit: "高", fitText: "露为水，禾为谷；晨露润禾，应秋收之象。" },
+  { n: "沁瑶", g: "女", py: "qìn yáo", src: "沁润 + 瑶玉", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "沁为水，瑶为美玉；水润玉洁，音义温润。" },
+  { n: "清瑶", g: "女", py: "qīng yáo", src: "清水瑶玉", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "清为水，瑶为玉；清润与端美并见。" },
+  { n: "沁瑜", g: "女", py: "qìn yú", src: "沁润 + 瑜玉", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "沁为水，瑜为美玉；怀瑾握瑜之玉德意象。" },
+  { n: "清瑜", g: "女", py: "qīng yú", src: "清水瑜玉", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "清为水，瑜为玉；水润玉明。" },
+  { n: "云澜", g: "女", py: "yún lán", src: "云水波澜", tags: ["自然", "大气", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "中高", fitText: "云为水汽，澜为水波；水象充足，意象开阔。" },
+  { n: "秋澜", g: "女", py: "qiū lán", src: "秋波微澜", tags: ["自然", "大气", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "中高", fitText: "秋为金收，澜为水波；金水相生，契合喜用。" },
+  { n: "秋澄", g: "女", py: "qiū chéng", src: "秋水澄明", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "中高", fitText: "秋为金，澄为水；金水相涵，秋澄气清。" },
+  { n: "晚晴", g: "女", py: "wǎn qíng", src: "李商隐《晚晴》· 人间重晚晴", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中", fitText: "晴有日火之象，晚字可缓；以典据与意境为主。" },
+  { n: "晴川", g: "女", py: "qíng chuān", src: "崔颢《黄鹤楼》· 晴川历历汉阳树", tags: ["大气", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中", fitText: "川字补水，晴字带日；两象相济，以诗境为重。" },
+  { n: "疏桐", g: "女", py: "shū tóng", src: "苏轼《卜算子》· 缺月挂疏桐", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中", fitText: "桐为木象，字面无水；以清疏意境与马年草木民俗为主。" },
+  { n: "汀兰", g: "女", py: "tīng lán", src: "《楚辞·九歌·湘夫人》· 搴汀洲兮杜若", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中高", fitText: "汀为水边，兰为香草；水边之兰，润而不燥。" },
+  { n: "沅芷", g: "女", py: "yuán zhǐ", src: "《楚辞·九歌·湘夫人》· 沅有芷兮澧有兰", tags: ["自然", "文雅", "古典"], sc: [4, 5, 4, 5, 5, 4], horse: false, fit: "中高", fitText: "沅为水名，芷为香草；水草相映，典据明确。" },
+  { n: "芷若", g: "女", py: "zhǐ ruò", src: "白芷杜若", tags: ["自然", "文雅", "古典"], sc: [4, 5, 4, 4, 4, 4], horse: false, fit: "中", fitText: "芷若皆香草，草象合马年民俗；非直接水象。" },
+  { n: "杜若", g: "女", py: "dù ruò", src: "《楚辞·九歌·湘君》· 采芳洲兮杜若", tags: ["自然", "文雅", "古典"], sc: [4, 5, 4, 5, 4, 4], horse: false, fit: "中", fitText: "杜若为香草，典据在楚辞；以清芳意象为主。" },
+  { n: "露华", g: "女", py: "lù huá", src: "李白《清平调》· 春风拂槛露华浓", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中高", fitText: "露为水，华为花；露华浓即花带清露，润而不燥。" },
+  { n: "荷露", g: "女", py: "hé lù", src: "荷承清露", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "中高", fitText: "荷为水生植物，露为水象；清露润荷。" },
+  { n: "兰舟", g: "女", py: "lán zhōu", src: "李清照《一剪梅》· 轻解罗裳，独上兰舟", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, fit: "中高", fitText: "舟为水行，兰为香草；水上行舟，意象清远。" },
+  { n: "云舒", g: "女", py: "yún shū", src: "云卷云舒", tags: ["自然", "文雅", "现代"], sc: [5, 5, 5, 3, 4, 4], horse: false, fit: "中高", fitText: "云为水汽，舒为舒展；云舒气畅，润而不滞。" },
+  { n: "沐宁", g: "女", py: "mù níng", src: "沐恩 + 安宁", tags: ["文雅", "温柔", "现代"], sc: [5, 5, 5, 3, 4, 4], horse: false, fit: "高", fitText: "沐为水润，宁为安定；水润心安。" },
+  { n: "沁宁", g: "女", py: "qìn níng", src: "沁润 + 安宁", tags: ["文雅", "温柔", "现代"], sc: [5, 5, 5, 3, 4, 4], horse: false, fit: "高", fitText: "沁为水渗，宁为安宁；润泽而平和。" },
+  { n: "澄宁", g: "女", py: "chéng níng", src: "澄澈安宁", tags: ["文雅", "温柔", "现代"], sc: [5, 5, 5, 3, 4, 4], horse: false, fit: "高", fitText: "澄为水清，宁为安定；清澄安宁。" },
+  { n: "知禾", g: "女", py: "zhī hé", src: "知 + 禾稼", tags: ["书卷", "自然", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "禾为谷木，知为明理；马年禾谷意象可参考。" },
+  { n: "书禾", g: "女", py: "shū hé", src: "书 + 禾稼", tags: ["书卷", "自然", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "书为文，禾为谷；书香与丰禾并见。" },
+  { n: "禾宁", g: "女", py: "hé níng", src: "禾稼安宁", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "禾为嘉谷，宁为安宁；丰收平和之象。" },
+  { n: "安禾", g: "女", py: "ān hé", src: "安顺禾熟", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "安为安稳，禾为嘉谷；平安丰熟。" },
+  { n: "予禾", g: "女", py: "yǔ hé", src: "给予禾丰", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "予为给予，禾为嘉谷；丰足温厚。" }
 ];
+
+const DETAILS = {
+  "其琛": { fit: "中高", text: "玉德珍宝，贵重在德不在燥；本命喜金水，玉有金玉之象，作用平和。" },
+  "聿修": { fit: "中", text: "取继承美德、修身之义；五行字面中性，不助燥，可作文雅备选。" },
+  "清越": { fit: "高", text: "清为水象，正合己土喜水润局；越取清亮超越，音律收束明亮。" },
+  "景行": { fit: "中", text: "取光明德行；字面五行中性，不直接补水，以义胜。" },
+  "嘉树": { fit: "中", text: "木象嘉树，马年草木意象好；本命木须水配，单用木不为主。" },
+  "既明": { fit: "中", text: "明达之义；明有日月，无直接水象，以义理见长。" },
+  "允文": { fit: "中", text: "文德信实；字面五行中性，不增燥气。" },
+  "承宇": { fit: "中", text: "承天宇之象；宀、宇有安身之意，五行作用温和。" },
+  "鹤鸣": { fit: "中", text: "声闻于天；鹤鸣清远，字面无直接水金，以意象为主。" },
+  "观复": { fit: "中", text: "观复见道；字面中性，重义理不重五行。" },
+  "含章": { fit: "中", text: "内蕴美质；章字有文采，五行中性。" },
+  "知衡": { fit: "中", text: "求知衡度；字面中性，以理性见长。" },
+  "婉清": { fit: "中高", text: "清字补水，婉字柔和；本命喜水，适合女孩。" },
+  "望舒": { fit: "中", text: "月御之神；月非直接水象，但清辉意象可润心性。" },
+  "云岫": { fit: "中高", text: "云为水汽，岫为山气；有润而不燥之象。" },
+  "其华": { fit: "中", text: "灼灼其华；华采明丽，五行作用中性。" },
+  "令仪": { fit: "中", text: "仪态端美；字面中性，不增燥。" },
+  "静姝": { fit: "中", text: "娴静美好；静字青争，字面无直接水象，以气质胜。" },
+  "未晞": { fit: "中高", text: "白露未晞，晨露意象属水；露水润物，契合润局。" },
+  "清许": { fit: "中高", text: "清字补水；许为语气词，清澈如此，音义皆清。" },
+  "嘉禾": { fit: "中", text: "嘉谷秋成；禾为谷木，合马年民俗，非直接水象。" },
+  "青禾": { fit: "中", text: "青翠禾苗；禾谷意象好，但无直接水象。" },
+  "予安": { fit: "中", text: "给予平安；安有宀，字面五行温和，不增燥。" },
+  "知夏": { fit: "慎", text: "夏为火季，字面火象偏重；本命火土已旺，宜慎。" },
+  "知微": { fit: "中", text: "洞察细微；字面中性，以智慧见长。" },
+  "初霁": { fit: "高", text: "霁为雨止，雨字头补水象；雨后初晴，正合燥局得润。" },
+  "一苇": { fit: "中高", text: "一苇渡江，水行之象；苇依水而生，意象近水。" },
+  "时雨": { fit: "高", text: "时雨为及时之雨，雨字补水，正合调候。" },
+  "南乔": { fit: "中", text: "南有乔木；木象为主，需水配，不作主补。" },
+  "既白": { fit: "中高", text: "东方既白，黎明之象；白为五行金色，暗合金喜。" },
+  "珩": { fit: "中", text: "佩玉之珩；玉为石之美者，五行偏土，作用温和。" },
+  "晟": { fit: "慎", text: "光明旺盛，日火之象；本命火土燥，宜慎。" },
+  "岳": { fit: "慎", text: "高山厚土；己土已旺，再取山岳土象宜慎。" },
+  "朗": { fit: "中", text: "月朗风清；朗有月，清朗意象不燥。" },
+  "卓": { fit: "中", text: "卓然独立；字面中性，以气象胜。" },
+  "柏": { fit: "中", text: "松柏长青；木象为主，合马年草木民俗，非主补。" },
+  "玥": { fit: "中", text: "神珠之玥；珠玉意象，五行温和。" },
+  "晴": { fit: "慎", text: "晴为日明，火象偏重；本命燥土，宜慎。" },
+  "岚": { fit: "中高", text: "山间雾气，水汽润泽；意象清润。" },
+  "桐": { fit: "中", text: "梧桐栖凤；木象，马年草木民俗可用。" },
+  "芷": { fit: "中", text: "白芷香草；草象合马年民俗，五行偏木。" },
+  "芃": { fit: "中", text: "草木茂盛；草象合马年民俗，无直接水象。" },
+  "禾": { fit: "中", text: "嘉谷之禾；合马年禾谷民俗，字面偏木。" },
+  "澄": { fit: "高", text: "澄为水清；氵水象直接补润，契合喜用。" },
+  "知秋": { fit: "中高", text: "秋为金气收成之季；己土喜金，秋字含金收意象。" },
+  "清秋": { fit: "中高", text: "清字补水，秋字取金收；清秋明净，音义皆佳。" },
+  "秋实": { fit: "中高", text: "春华秋实；秋为金收，实为成果，意象厚重。" },
+  "秋禾": { fit: "中", text: "秋禾丰熟；禾谷意象合民俗，字面无直接水象。" },
+  "清禾": { fit: "高", text: "清为水润，禾为秋成；水润己土、禾应未月，契合喜用与节令。" },
+  "沁澜": { fit: "高", text: "沁、澜皆水象，双水润局；澜有观澜之据。" },
+  "清和": { fit: "高", text: "清为水润，和为和顺；水润燥土，和字兼取禾谷与中和。" },
+  "清澜": { fit: "高", text: "清、澜双水；楚辞沧浪、孟子观澜，水象与典据俱足。" }
+};
 
 const SURNAMES = {
   陈: "chén", 李: "lǐ", 王: "wáng", 张: "zhāng", 刘: "liú", 杨: "yáng",
@@ -504,6 +621,8 @@ function cardHTML(n, surname) {
   const toneLine = meta
     ? "声调 " + meta.toneText + (meta.hint ? " · " + meta.hint : "")
     : (surname ? "姓氏拼音待补" : "");
+  const d = DETAILS[n.n] || { fit: n.fit || "中", text: n.fitText || "以音义与出处为据；如需强补喜用，优先水象候选。" };
+  const fitClass = d.fit === "高" ? "fit-high" : (d.fit === "慎" ? "fit-low" : "fit-mid");
   const bars = SCORE_NAMES.map((label, i) =>
     `<div class="score"><span>${label}</span><div class="bar"><div class="fill" style="width:${n.sc[i] * 20}%"></div></div><span>${n.sc[i]}</span></div>`
   ).join("");
@@ -522,7 +641,13 @@ function cardHTML(n, surname) {
     <div class="scores">${bars}</div>
     <div class="note">${esc(n.note)}</div>
     <div class="actions">
+      <button type="button" class="detail-toggle" data-detail="${esc(n.n)}" aria-expanded="false">查看依据</button>
       <button type="button" class="${active ? "is-picked" : ""}" aria-pressed="${active}" data-name="${esc(n.n)}">${active ? "已选" : "候选"}</button>
+    </div>
+    <div class="detail" hidden>
+      <div class="fit-row"><span class="fit-badge ${fitClass}">契合 ${d.fit}</span></div>
+      <p><strong>八字契合</strong>：${esc(d.text)}</p>
+      <p><strong>取名依据</strong>：${esc(n.src)}。${esc(n.note)}</p>
     </div>
   </article>`;
 }
@@ -584,6 +709,17 @@ function togglePick(name) {
 }
 
 function onClick(e) {
+  const detailBtn = e.target.closest("button[data-detail]");
+  if (detailBtn) {
+    const card = detailBtn.closest(".card");
+    const detail = card ? card.querySelector(".detail") : null;
+    if (!detail) return;
+    const expanded = detailBtn.getAttribute("aria-expanded") === "true";
+    detail.hidden = expanded;
+    detailBtn.setAttribute("aria-expanded", String(!expanded));
+    detailBtn.textContent = expanded ? "查看依据" : "收起依据";
+    return;
+  }
   const btn = e.target.closest("button[data-name]");
   if (btn) togglePick(btn.dataset.name);
 }
