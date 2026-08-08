@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" href="data:,">
 <title>婴儿取名工作台</title>
 <style>
 * { box-sizing: border-box; }
@@ -225,6 +226,24 @@ button.is-picked {
 .compare-table td:first-child { min-width: 150px; }
 .compare-table .num { white-space: nowrap; }
 .compare-table .pinyin { margin-top: 3px; }
+.custom-panel {
+  margin-top: 26px;
+  border-top: 1px solid #d8e2df;
+  padding-top: 16px;
+}
+.custom-panel h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.custom-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; margin-bottom: 12px; }
+.custom-result {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: #fff;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  padding: 14px;
+}
+.diag-line { margin: 0; font-size: 13px; color: #40534e; line-height: 1.7; }
+.diag-line strong { color: #22302d; font-weight: 500; }
 @media (max-width: 720px) {
   .summary { grid-template-columns: 1fr 1fr; }
   .fullname { grid-column: 1 / -1; }
@@ -292,6 +311,16 @@ button.is-picked {
     <div class="fullname">
       <div class="fullname-main"><span>全名</span><strong id="fullnameText">—</strong></div>
       <div class="fullname-meta" id="fullnameMeta">—</div>
+    </div>
+  </section>
+
+  <section class="custom-panel" aria-label="自拟名字诊断">
+    <h2>自拟名字诊断</h2>
+    <div class="custom-controls">
+      <label class="field">自拟名<input id="customName" type="text" maxlength="4" autocomplete="off"></label>
+    </div>
+    <div class="custom-result" id="customResult">
+      <div class="empty">输入名字后显示诊断</div>
     </div>
   </section>
 
@@ -529,10 +558,42 @@ const COMPOUND_SURNAMES = {
   百里: "bǎi lǐ", 东郭: "dōng guō", 呼延: "hū yán"
 };
 
+const WATER_CHARS = "清澜沁澄沐泽溪雨露江河流泉源汐润津湘沅汀涟漪洁淳涵泊潇澈雪霜云雾".split("");
+const GOLD_CHARS = "金鑫铭钧钰铮锦银镜钟锋锐锡钦钥铃".split("");
+const WOOD_CHARS = "木林森禾竹桐柏楠梧荷芷芃兰芸若华草叶松梅桃杏樱棠柳桂莲蓉芙苇菁乔".split("");
+const FIRE_CHARS = "火炎焱煜炜烨曦暄照昱昊晴晟夏烈燃".split("");
+const EARTH_CHARS = "土山岳峰岩石田坤垚城".split("");
+const JADE_CHARS = "玉瑶瑜珩玥琼瑾琳".split("");
+
+function charElement(ch) {
+  if (WATER_CHARS.includes(ch)) return "水";
+  if (GOLD_CHARS.includes(ch)) return "金";
+  if (WOOD_CHARS.includes(ch)) return "木";
+  if (FIRE_CHARS.includes(ch)) return "火";
+  if (EARTH_CHARS.includes(ch)) return "土";
+  if (JADE_CHARS.includes(ch)) return "玉";
+  return "中性";
+}
+
+const KNOWN_CHARS = new Set([
+  ...NAMES.flatMap(n => [...n.n]),
+  ...Object.keys(SURNAMES),
+  ...Object.keys(COMPOUND_SURNAMES),
+  ...WATER_CHARS,
+  ...GOLD_CHARS,
+  ...WOOD_CHARS,
+  ...FIRE_CHARS,
+  ...EARTH_CHARS,
+  ...JADE_CHARS,
+  ..."霄文静皇甫祖".split("")
+]);
+
 const $ = id => document.getElementById(id);
 const els = {
   surname: $("surname"),
   blocked: $("blocked"),
+  customName: $("customName"),
+  customResult: $("customResult"),
   gender: $("gender"),
   style: $("style"),
   folk: $("folk"),
@@ -719,6 +780,105 @@ function renderCompare(surname) {
   }).join("");
 }
 
+function diagnoseCustom() {
+  const input = els.customName.value.trim();
+  const box = els.customResult;
+  if (!input) {
+    box.innerHTML = '<div class="empty">输入名字后显示诊断</div>';
+    return;
+  }
+  const surname = els.surname.value.trim() || "皇甫";
+  const full = surname + input;
+  const chars = [...input];
+  const counts = { 水: 0, 金: 0, 木: 0, 火: 0, 土: 0, 玉: 0, 中性: 0 };
+  chars.forEach(ch => { counts[charElement(ch)] += 1; });
+  const hasFire = counts.火 > 0;
+  const hasEarth = counts.土 > 0;
+  const hasWater = counts.水 > 0;
+  const hasGold = counts.金 > 0;
+  const hasWood = counts.木 > 0;
+  let level = "中";
+  let reason = "字面五行中性，以音义为主；如需强补喜用，建议加入水象字。";
+  if (hasFire || hasEarth) {
+    if (hasWater && counts.火 + counts.土 <= 1) {
+      level = "中高";
+      reason = "含火/土字但配了水字，燥气可润；建议只保留一个火土字，不要再加。";
+    } else {
+      level = "慎";
+      reason = "火/土字偏重，与本命喜金水、忌火土相逆；建议避开或换成清、沁、澄等水象字。";
+    }
+  } else if (hasWater) {
+    level = "高";
+    reason = "含水象字，正合己土喜水润局；" + (hasGold || counts.玉 > 0 ? "又有金/玉意象，金水相生，更佳。" : "若再合金象字会更稳。");
+  } else if (hasGold) {
+    level = "中高";
+    reason = "合金象字，金为次喜，可生水助身；建议搭配水象字更佳。";
+  } else if (hasWood) {
+    level = "中";
+    reason = "木字可疏土但会生火，本命木须水配；单用木字契合一般。";
+  }
+  const notes = [];
+  if ([..."霄文静皇甫祖"].some(ch => input.includes(ch))) {
+    notes.push("包含父母名讳或姓氏用字，建议避开。");
+  }
+  const unknown = chars.filter(ch => !KNOWN_CHARS.has(ch));
+  if (unknown.length) {
+    notes.push(`暂未收录：${unknown.join("、")}。请用《通用规范汉字表》核对字形。`);
+  }
+  notes.push("字面五行按偏旁与常用字义推断，仅供家庭参考，不替代完整命理复核。");
+  const fitClass = level === "高" ? "fit-high" : (level === "慎" ? "fit-low" : "fit-mid");
+  const elText = chars.map(ch => `${ch}：${charElement(ch)}`).join("、");
+  box.innerHTML = `
+    <div class="fit-row"><span class="fit-badge ${fitClass}">契合 ${level}</span></div>
+    <p class="diag-line"><strong>全名</strong>：${esc(full)}</p>
+    <p class="diag-line"><strong>单字五行</strong>：${esc(elText)}</p>
+    <p class="diag-line"><strong>八字判断</strong>：${esc(reason)}</p>
+    ${notes.map(n => `<p class="diag-line"><strong>提示</strong>：${esc(n)}</p>`).join("")}
+  `;
+}
+
+async function saveSharedState(picksOverride) {
+  if (location.protocol !== "http:" && location.protocol !== "https:") return;
+  const picks = picksOverride || [...picked];
+  try {
+    await fetch("/api/state", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ picks })
+    });
+  } catch (err) {
+    // 非共享环境（如直接打开本地文件）时静默降级
+  }
+}
+
+async function loadSharedState(silent) {
+  if (location.protocol !== "http:" && location.protocol !== "https:") return;
+  try {
+    const res = await fetch("/api/state", { cache: "no-store" });
+    if (!res.ok) return;
+    const state = await res.json();
+    let remote = new Set(state.picks || []);
+    let local = new Set();
+    try {
+      local = new Set(JSON.parse(localStorage.getItem("baby-name-picks") || "[]"));
+    } catch (err) {
+      local = new Set();
+    }
+    if (!state.updatedAt && local.size) {
+      remote = new Set([...remote, ...local]);
+      saveSharedState([...remote]);
+    }
+    const key = [...remote].sort().join("|");
+    if (key !== [...picked].sort().join("|")) {
+      picked = remote;
+      localStorage.setItem("baby-name-picks", JSON.stringify([...picked]));
+      if (!silent) render();
+    }
+  } catch (err) {
+    // 共享服务不可用时保留本地数据
+  }
+}
+
 function render() {
   const surname = els.surname.value.trim();
   const list = filtered();
@@ -742,6 +902,7 @@ function togglePick(name) {
     picked.add(name);
   }
   localStorage.setItem("baby-name-picks", JSON.stringify([...picked]));
+  saveSharedState();
   render();
 }
 
@@ -800,6 +961,7 @@ els.rec.addEventListener("change", render);
 els.fitOnly.addEventListener("change", render);
 els.surname.addEventListener("input", render);
 els.blocked.addEventListener("input", render);
+els.customName.addEventListener("input", diagnoseCustom);
 els.grid.addEventListener("click", onClick);
 els.pickedList.addEventListener("click", onClick);
 els.copyCompare.addEventListener("click", () => {
@@ -813,6 +975,8 @@ els.copyCompare.addEventListener("click", () => {
 });
 
 render();
+loadSharedState(false);
+setInterval(() => loadSharedState(true), 5000);
 </script>
 </body>
 </html>
