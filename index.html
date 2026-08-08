@@ -1,0 +1,643 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>婴儿取名工作台</title>
+<style>
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: #f4f7f6;
+  color: #22302d;
+  font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  line-height: 1.5;
+}
+button, input, select { font: inherit; }
+.app { max-width: 1200px; margin: 0 auto; padding: 24px 20px 56px; }
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-bottom: 1px solid #d8e2df;
+  padding-bottom: 18px;
+  margin-bottom: 18px;
+}
+h1 { margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0; }
+.subtitle { margin: 6px 0 0; color: #5d716c; font-size: 13px; }
+.controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.field { display: flex; flex-direction: column; gap: 5px; font-size: 12px; color: #40534e; }
+.field input[type="text"], .field select {
+  min-height: 36px;
+  border: 1px solid #c9d6d2;
+  border-radius: 6px;
+  padding: 0 10px;
+  background: #fff;
+  color: #22302d;
+}
+.field input[type="text"] { width: 92px; }
+.check {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  font-size: 13px;
+  color: #40534e;
+  cursor: pointer;
+}
+.summary {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  gap: 12px;
+  align-items: stretch;
+  margin-bottom: 18px;
+}
+.stat {
+  background: #fff;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  padding: 10px 16px;
+  min-width: 112px;
+}
+.stat span { display: block; font-size: 24px; font-weight: 600; color: #0f766e; }
+.stat small { display: block; margin-top: 2px; color: #5d716c; font-size: 12px; }
+.fullname {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  padding: 10px 16px;
+  min-height: 64px;
+  font-size: 14px;
+  color: #40534e;
+  min-width: 0;
+}
+.fullname strong {
+  font-size: 26px;
+  font-weight: 600;
+  color: #0f766e;
+  overflow-wrap: anywhere;
+}
+.fullname-main { min-width: 0; }
+.fullname-main span { display: block; color: #5d716c; font-size: 12px; }
+.fullname-meta { margin-left: auto; text-align: right; color: #5d716c; font-size: 13px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 14px;
+}
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid #d8e2df;
+  border-radius: 8px;
+  padding: 16px;
+}
+.card-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+.name { font-size: 26px; font-weight: 600; letter-spacing: 2px; overflow-wrap: anywhere; }
+.pinyin { margin-top: 4px; color: #5d716c; font-size: 13px; }
+.tone { margin-top: 2px; color: #7b8b86; font-size: 12px; }
+.badge {
+  flex: 0 0 auto;
+  border: 1px solid #cbd9d5;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+  color: #40534e;
+  white-space: nowrap;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  background: #edf4f1;
+  color: #2f6b5d;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 12px;
+}
+.origin { color: #40534e; font-size: 13px; line-height: 1.55; }
+.scores { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.score {
+  display: grid;
+  grid-template-columns: 22px 1fr 18px;
+  gap: 6px;
+  align-items: center;
+  font-size: 12px;
+  color: #40534e;
+}
+.bar { height: 6px; background: #e8efec; border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; background: #0f766e; border-radius: 999px; }
+.note {
+  border-top: 1px dashed #d8e2df;
+  padding-top: 10px;
+  font-size: 12px;
+  color: #5d716c;
+  line-height: 1.5;
+}
+.actions { display: flex; gap: 8px; margin-top: auto; }
+button {
+  min-height: 34px;
+  border: 1px solid #c9d6d2;
+  border-radius: 6px;
+  padding: 0 12px;
+  background: #fff;
+  color: #22302d;
+  cursor: pointer;
+}
+button.is-picked {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+.picked-panel {
+  margin-top: 28px;
+  border-top: 1px solid #d8e2df;
+  padding-top: 16px;
+}
+.picked-panel h2 { margin: 0 0 12px; font-size: 16px; font-weight: 600; }
+.picked-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.pick-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #c9d6d2;
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px 6px 5px 12px;
+  font-size: 14px;
+}
+.pick-chip button { min-height: 26px; padding: 0 8px; font-size: 12px; }
+.empty { padding: 24px 0; color: #5d716c; text-align: center; }
+.panel-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.panel-head h2 { margin: 0; font-size: 16px; font-weight: 600; }
+.compare { margin-top: 18px; overflow-x: auto; }
+.compare h3 { margin: 0 0 10px; font-size: 14px; font-weight: 600; }
+.compare-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.compare-table th,
+.compare-table td {
+  border-bottom: 1px solid #d8e2df;
+  padding: 9px 10px;
+  text-align: left;
+  vertical-align: top;
+}
+.compare-table th { color: #40534e; font-weight: 500; white-space: nowrap; }
+.compare-table td:first-child { min-width: 150px; }
+.compare-table .num { white-space: nowrap; }
+.compare-table .pinyin { margin-top: 3px; }
+@media (max-width: 720px) {
+  .summary { grid-template-columns: 1fr 1fr; }
+  .fullname { grid-column: 1 / -1; }
+  .controls { width: 100%; }
+}
+@media (max-width: 480px) {
+  .fullname { flex-direction: column; align-items: flex-start; }
+  .fullname-meta { margin-left: 0; text-align: left; }
+}
+@media (max-width: 380px) {
+  .scores { grid-template-columns: 1fr; }
+  .app { padding: 18px 14px 40px; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+  <header class="topbar">
+    <div>
+      <h1>取名工作台</h1>
+      <p class="subtitle">音 · 义 · 形 · 文 · 俗 · 合</p>
+    </div>
+    <div class="controls">
+      <label class="field">姓氏<input id="surname" type="text" maxlength="4" autocomplete="off"></label>
+      <label class="field">性别
+        <select id="gender">
+          <option value="all">不限</option>
+          <option value="男">男</option>
+          <option value="女">女</option>
+          <option value="中性">中性</option>
+        </select>
+      </label>
+      <label class="field">风格
+        <select id="style">
+          <option value="all">不限</option>
+          <option value="文雅">文雅</option>
+          <option value="大气">大气</option>
+          <option value="自然">自然</option>
+          <option value="现代">现代</option>
+          <option value="古典">古典</option>
+          <option value="温柔">温柔</option>
+          <option value="稳重">稳重</option>
+          <option value="清新">清新</option>
+          <option value="书卷">书卷</option>
+        </select>
+      </label>
+      <label class="check"><input id="folk" type="checkbox">马年友好</label>
+      <label class="check"><input id="rec" type="checkbox">本命推荐</label>
+      <label class="field">排序
+        <select id="sort">
+          <option value="total">综合分</option>
+          <option value="yin">音韵分</option>
+          <option value="su">重名友好</option>
+        </select>
+      </label>
+    </div>
+  </header>
+
+  <section class="summary" aria-label="概览">
+    <div class="stat"><span id="count">52</span><small>候选</small></div>
+    <div class="stat"><span id="pickedCount">0</span><small>已选</small></div>
+    <div class="fullname">
+      <div class="fullname-main"><span>全名</span><strong id="fullnameText">—</strong></div>
+      <div class="fullname-meta" id="fullnameMeta">—</div>
+    </div>
+  </section>
+
+  <section class="grid" id="grid" aria-label="候选名字"></section>
+
+  <section class="picked-panel">
+    <div class="panel-head">
+      <h2>候选清单</h2>
+      <button id="copyCompare" type="button">复制对比</button>
+    </div>
+    <div class="picked-list" id="pickedList"></div>
+    <div class="compare" id="compareBox" hidden>
+      <h3>最终对比</h3>
+      <table class="compare-table" aria-label="最终候选对比">
+        <thead>
+          <tr>
+            <th>名字</th>
+            <th>出处</th>
+            <th>声调</th>
+            <th>六维评分</th>
+            <th>注意</th>
+          </tr>
+        </thead>
+        <tbody id="compareTableBody"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+const SCORE_NAMES = ["音", "义", "形", "文", "俗", "合"];
+const NAMES = [
+  { n: "其琛", g: "男", py: "qí chēn", src: "《诗经·鲁颂·泮水》· 来献其琛", tags: ["古典", "书卷", "稳重"], sc: [5, 5, 4, 5, 4, 4], horse: false, note: "珍宝之意；琛非高频字，需教写。" },
+  { n: "聿修", g: "男", py: "yù xiū", src: "《诗经·大雅·文王》· 聿修厥德", tags: ["古典", "书卷"], sc: [4, 5, 4, 5, 4, 4], horse: false, note: "继承并修养美德；聿需教写。" },
+  { n: "清越", g: "中性", py: "qīng yuè", src: "《礼记·聘义》· 其声清越以长", tags: ["文雅", "大气", "清新"], sc: [5, 5, 5, 5, 4, 4], horse: false, rec: true, note: "声音清亮悠长；易被写成清月。" },
+  { n: "景行", g: "男", py: "jǐng xíng", src: "《诗经·小雅·车舝》· 景行行止", tags: ["大气", "稳重", "古典"], sc: [4, 5, 5, 5, 4, 3], horse: false, note: "第二个行读 xíng，勿读 háng。" },
+  { n: "嘉树", g: "男", py: "jiā shù", src: "《楚辞·九章·橘颂》· 后皇嘉树", tags: ["自然", "稳重", "大气"], sc: [4, 5, 5, 5, 4, 4], horse: true, note: "美好之树；木字旁贴合马年民俗。" },
+  { n: "既明", g: "男", py: "jì míng", src: "《诗经·大雅·烝民》· 既明且哲", tags: ["古典", "书卷"], sc: [4, 5, 5, 5, 4, 4], horse: false, note: "明智明达；偏书面，适合文雅家庭。" },
+  { n: "允文", g: "男", py: "yǔn wén", src: "《诗经·鲁颂·泮水》· 允文允武", tags: ["文雅", "古典"], sc: [4, 5, 5, 5, 4, 4], horse: false, note: "文德信实；方言中注意与运文同音。" },
+  { n: "承宇", g: "男", py: "chéng yǔ", src: "《楚辞·九章·涉江》· 云霏霏而承宇", tags: ["大气", "稳重"], sc: [4, 5, 5, 5, 4, 4], horse: true, note: "胸襟开阔；宀意象符合马年民俗。" },
+  { n: "鹤鸣", g: "男", py: "hè míng", src: "《诗经·小雅·鹤鸣》· 鹤鸣于九皋", tags: ["大气", "古典"], sc: [4, 5, 3, 5, 4, 4], horse: false, note: "才德之声远闻；鹤笔画稍多。" },
+  { n: "观复", g: "男", py: "guān fù", src: "《道德经》· 万物并作，吾以观复", tags: ["书卷", "古典", "大气"], sc: [4, 5, 5, 5, 4, 4], horse: false, note: "观察循环往复；观为多音字。" },
+  { n: "含章", g: "中性", py: "hán zhāng", src: "《周易·坤卦》· 含章可贞", tags: ["文雅", "书卷", "古典"], sc: [4, 5, 5, 5, 4, 4], horse: false, note: "内蕴美质；男女皆可。" },
+  { n: "知衡", g: "男", py: "zhī héng", src: "知 + 衡：求知与平衡", tags: ["现代", "稳重"], sc: [4, 4, 5, 3, 5, 4], horse: false, note: "意思清楚；无单一经典出处。" },
+  { n: "婉清", g: "女", py: "wǎn qīng", src: "《诗经·郑风·野有蔓草》· 清扬婉兮", tags: ["文雅", "温柔", "古典"], sc: [5, 5, 5, 5, 2, 4], horse: false, note: "温婉清雅；近年重名偏多。" },
+  { n: "望舒", g: "女", py: "wàng shū", src: "《楚辞·离骚》· 前望舒使先驱兮", tags: ["文雅", "大气", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, note: "月御之神；古典而不难懂。" },
+  { n: "云岫", g: "女", py: "yún xiù", src: "陶渊明《归去来兮辞》· 云无心以出岫", tags: ["自然", "清新", "古典"], sc: [5, 5, 3, 5, 5, 4], horse: false, note: "闲云出山；岫需教写。" },
+  { n: "其华", g: "女", py: "qí huá", src: "《诗经·周南·桃夭》· 灼灼其华", tags: ["大气", "文雅", "古典"], sc: [4, 5, 5, 5, 3, 4], horse: false, note: "光彩绽放；近年开始变多。" },
+  { n: "令仪", g: "女", py: "lìng yí", src: "《诗经·小雅·湛露》· 莫不令仪", tags: ["文雅", "古典", "稳重"], sc: [5, 5, 5, 5, 4, 4], horse: false, note: "仪态端庄；无明显短板。" },
+  { n: "静姝", g: "女", py: "jìng shū", src: "《诗经·邶风·静女》· 静女其姝", tags: ["文雅", "温柔", "古典"], sc: [4, 5, 5, 5, 2, 4], horse: false, note: "娴静美好；近年重名偏多。" },
+  { n: "未晞", g: "女", py: "wèi xī", src: "《诗经·秦风·蒹葭》· 白露未晞", tags: ["清新", "自然", "古典"], sc: [5, 5, 3, 5, 5, 4], horse: false, note: "晨露未干；晞需教写。" },
+  { n: "清许", g: "女", py: "qīng xǔ", src: "朱熹《观书有感》· 问渠那得清如许", tags: ["文雅", "清新", "书卷"], sc: [5, 5, 5, 5, 4, 3], horse: false, note: "清澈如此；姓氏为许时需避。" },
+  { n: "嘉禾", g: "女", py: "jiā hé", src: "嘉禾：吉祥之禾", tags: ["自然", "大气", "古典"], sc: [4, 5, 5, 4, 4, 4], horse: true, note: "禾字贴合马年民俗；与嘉兴旧称同名。" },
+  { n: "青禾", g: "女", py: "qīng hé", src: "青翠禾苗", tags: ["自然", "清新", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, note: "清新自然；无经典出处。" },
+  { n: "予安", g: "女", py: "yǔ ān", src: "予 + 安：给予平安", tags: ["温柔", "现代", "稳重"], sc: [5, 5, 5, 3, 4, 5], horse: true, note: "安有宀意象，符合马年民俗；含义直白。" },
+  { n: "知夏", g: "女", py: "zhī xià", src: "知 + 夏：记住这个夏天", tags: ["现代", "清新"], sc: [5, 4, 5, 3, 4, 4], horse: false, note: "出生季节纪念；无经典出处。" },
+  { n: "知微", g: "中性", py: "zhī wēi", src: "《周易·系辞》· 知微知彰", tags: ["书卷", "文雅"], sc: [4, 5, 5, 5, 4, 4], horse: false, note: "洞察细微；男女皆可。" },
+  { n: "初霁", g: "中性", py: "chū jì", src: "《说文》霁，雨止也；雨后初晴", tags: ["清新", "大气", "古典"], sc: [5, 5, 3, 4, 5, 4], horse: false, rec: true, note: "雨后初晴，雨字补水象；霁需教写。" },
+  { n: "一苇", g: "中性", py: "yī wéi", src: "《诗经·卫风·河广》· 一苇杭之", tags: ["自然", "现代", "文雅"], sc: [5, 4, 5, 5, 4, 4], horse: false, note: "以轻捷渡江；意象偏轻盈。" },
+  { n: "时雨", g: "中性", py: "shí yǔ", src: "及时之雨", tags: ["自然", "文雅"], sc: [5, 4, 5, 4, 4, 4], horse: false, note: "温润自然；含义偏直白。" },
+  { n: "南乔", g: "中性", py: "nán qiáo", src: "《诗经·周南·汉广》· 南有乔木", tags: ["自然", "大气", "现代"], sc: [5, 4, 5, 5, 3, 4], horse: false, note: "挺拔舒展；近年偏多。" },
+  { n: "既白", g: "中性", py: "jì bái", src: "苏轼《赤壁赋》· 不知东方之既白", tags: ["书卷", "清新"], sc: [4, 4, 5, 5, 4, 4], horse: false, note: "黎明将至；无明显短板。" },
+  { n: "珩", g: "男", py: "héng", src: "珩：佩玉上端的横玉", tags: ["古典", "稳重"], sc: [4, 5, 4, 4, 5, 4], horse: false, note: "玉德之美；珩需教写。" },
+  { n: "晟", g: "男", py: "shèng", src: "晟：光明、旺盛", tags: ["大气", "现代"], sc: [4, 5, 4, 4, 4, 4], horse: false, note: "明亮兴盛；字形端正。" },
+  { n: "岳", g: "男", py: "yuè", src: "岳：高山、五岳", tags: ["大气", "稳重"], sc: [4, 5, 5, 4, 3, 4], horse: false, note: "稳重可靠；单字名偏大气。" },
+  { n: "朗", g: "男", py: "lǎng", src: "朗：晴朗、开朗", tags: ["清新", "大气", "现代"], sc: [5, 5, 5, 3, 4, 4], horse: false, note: "性格明朗；含义直白。" },
+  { n: "卓", g: "男", py: "zhuó", src: "卓：卓越、卓然", tags: ["现代", "大气"], sc: [4, 5, 4, 3, 4, 4], horse: false, note: "期望出众；与平声姓氏连读更好。" },
+  { n: "柏", g: "男", py: "bǎi", src: "柏：松柏长青", tags: ["自然", "稳重", "古典"], sc: [4, 5, 5, 4, 3, 4], horse: true, note: "木字旁贴合马年民俗；坚强有生命力。" },
+  { n: "玥", g: "女", py: "yuè", src: "玥：传说中的神珠", tags: ["现代", "文雅"], sc: [4, 5, 5, 3, 2, 4], horse: false, note: "美好珍贵；近年重名偏多。" },
+  { n: "晴", g: "女", py: "qíng", src: "晴：晴朗、明朗", tags: ["清新", "现代", "文雅"], sc: [5, 5, 5, 3, 3, 4], horse: false, note: "明亮清爽；含义直白。" },
+  { n: "岚", g: "女", py: "lán", src: "岚：山间雾气", tags: ["自然", "文雅", "古典"], sc: [5, 5, 4, 4, 4, 4], horse: false, note: "轻盈空灵；需注意方言读音。" },
+  { n: "桐", g: "女", py: "tóng", src: "桐：梧桐", tags: ["自然", "古典", "清新"], sc: [4, 5, 5, 4, 3, 4], horse: true, note: "木字旁贴合马年民俗；凤栖梧桐的意象。" },
+  { n: "芷", g: "女", py: "zhǐ", src: "芷：白芷香草", tags: ["自然", "古典", "文雅"], sc: [4, 5, 4, 4, 3, 4], horse: true, note: "艹字头贴合马年民俗；清香洁净。" },
+  { n: "芃", g: "女", py: "péng", src: "芃：草木茂盛", tags: ["自然", "清新", "古典"], sc: [4, 5, 3, 4, 5, 4], horse: true, note: "艹字头贴合马年民俗；芃需教写。" },
+  { n: "禾", g: "中性", py: "hé", src: "禾：禾苗、谷物", tags: ["自然", "清新", "现代"], sc: [5, 4, 5, 3, 3, 5], horse: true, note: "禾字贴合马年民俗；单字简洁。" },
+  { n: "澄", g: "中性", py: "chéng", src: "澄：清澈、澄明", tags: ["文雅", "清新", "现代"], sc: [5, 5, 4, 3, 4, 4], horse: false, note: "干净通透；姓氏为程时注意同音。" },
+  { n: "知秋", g: "中性", py: "zhī qiū", src: "一叶知秋", tags: ["自然", "书卷", "清新"], sc: [5, 4, 5, 4, 3, 4], horse: false, note: "生于立秋前后，节气纪念。" },
+  { n: "清秋", g: "女", py: "qīng qiū", src: "辛弃疾词· 楚天千里清秋", tags: ["文雅", "清新", "古典"], sc: [5, 4, 5, 5, 3, 4], horse: false, note: "清朗秋意；两个阴平连读略平。" },
+  { n: "秋实", g: "男", py: "qiū shí", src: "春华秋实", tags: ["大气", "稳重", "古典"], sc: [4, 5, 5, 4, 4, 4], horse: false, note: "脚踏实地、有所收获。" },
+  { n: "秋禾", g: "女", py: "qiū hé", src: "秋天的禾苗", tags: ["自然", "清新", "古典"], sc: [5, 4, 5, 3, 5, 4], horse: true, note: "禾字贴合马年民俗；秋意与丰收。" },
+  { n: "清禾", g: "女", py: "qīng hé", src: "《楚辞》沧浪之水清兮 + 《诗经》十月纳禾稼", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, rec: true, note: "清水润禾，秋成可期；禾字贴合马年民俗。" },
+  { n: "沁澜", g: "女", py: "qìn lán", src: "沁润 + 《孟子》观水必观其澜", tags: ["文雅", "大气", "清新"], sc: [5, 5, 4, 5, 4, 4], horse: false, note: "水象调候；澜字稍繁但规范。" },
+  { n: "清和", g: "女", py: "qīng hé", src: "谢灵运· 首夏犹清和，芳草亦未歇", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, rec: true, note: "清明和暖；与清禾同音，取意不同。" },
+  { n: "清澜", g: "女", py: "qīng lán", src: "《楚辞》沧浪之水清兮 + 《孟子》观水必观其澜", tags: ["文雅", "大气", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: false, rec: true, note: "清波微澜；口音与清兰相同，意象皆美。" }
+];
+
+const SURNAMES = {
+  陈: "chén", 李: "lǐ", 王: "wáng", 张: "zhāng", 刘: "liú", 杨: "yáng",
+  黄: "huáng", 赵: "zhào", 吴: "wú", 周: "zhōu", 徐: "xú", 孙: "sūn",
+  马: "mǎ", 朱: "zhū", 胡: "hú", 郭: "guō", 何: "hé", 林: "lín",
+  罗: "luó", 高: "gāo", 郑: "zhèng", 梁: "liáng", 谢: "xiè", 宋: "sòng",
+  唐: "táng", 许: "xǔ", 韩: "hán", 冯: "féng", 邓: "dèng", 曹: "cáo",
+  彭: "péng", 曾: "zēng", 肖: "xiāo", 田: "tián", 董: "dǒng", 袁: "yuán",
+  潘: "pān", 蔡: "cài", 蒋: "jiǎng", 余: "yú", 于: "yú", 杜: "dù",
+  叶: "yè", 程: "chéng", 苏: "sū", 魏: "wèi", 吕: "lǚ", 丁: "dīng",
+  任: "rén", 沈: "shěn", 姚: "yáo", 卢: "lú", 姜: "jiāng", 崔: "cuī",
+  钟: "zhōng", 谭: "tán", 陆: "lù", 汪: "wāng", 范: "fàn", 金: "jīn",
+  石: "shí", 廖: "liào", 贾: "jiǎ", 夏: "xià", 韦: "wéi", 傅: "fù",
+  方: "fāng", 白: "bái", 邹: "zōu", 孟: "mèng", 熊: "xióng", 秦: "qín",
+  邱: "qiū", 江: "jiāng", 尹: "yǐn", 薛: "xuē", 闫: "yán", 段: "duàn",
+  雷: "léi", 侯: "hóu", 龙: "lóng", 史: "shǐ", 陶: "táo", 黎: "lí",
+  贺: "hè", 顾: "gù", 毛: "máo", 郝: "hǎo", 龚: "gōng", 邵: "shào",
+  万: "wàn", 钱: "qián", 严: "yán", 覃: "qín", 武: "wǔ", 戴: "dài",
+  莫: "mò", 孔: "kǒng", 向: "xiàng", 汤: "tāng", 纪: "jǐ", 舒: "shū",
+  屈: "qū", 项: "xiàng", 祝: "zhù", 柳: "liǔ", 阮: "ruǎn", 蓝: "lán",
+  闵: "mǐn", 季: "jì", 柯: "kē", 洪: "hóng", 包: "bāo", 倪: "ní",
+  邢: "xíng", 甘: "gān", 赖: "lài", 乔: "qiáo", 单: "shàn"
+};
+
+const COMPOUND_SURNAMES = {
+  皇甫: "huáng fǔ", 欧阳: "ōu yáng", 司马: "sī mǎ", 上官: "shàng guān",
+  诸葛: "zhū gě", 东方: "dōng fāng", 慕容: "mù róng", 尉迟: "yù chí",
+  宇文: "yǔ wén", 长孙: "zhǎng sūn", 司徒: "sī tú", 司空: "sī kōng",
+  令狐: "lìng hú", 夏侯: "xià hóu", 公孙: "gōng sūn", 端木: "duān mù",
+  轩辕: "xuān yuán", 独孤: "dú gū", 南宫: "nán gōng", 西门: "xī mén",
+  百里: "bǎi lǐ", 东郭: "dōng guō", 呼延: "hū yán"
+};
+
+const $ = id => document.getElementById(id);
+const els = {
+  surname: $("surname"),
+  gender: $("gender"),
+  style: $("style"),
+  folk: $("folk"),
+  rec: $("rec"),
+  sort: $("sort"),
+  grid: $("grid"),
+  count: $("count"),
+  pickedCount: $("pickedCount"),
+  fullnameText: $("fullnameText"),
+  fullnameMeta: $("fullnameMeta"),
+  pickedList: $("pickedList"),
+  compareBox: $("compareBox"),
+  compareTableBody: $("compareTableBody"),
+  copyCompare: $("copyCompare")
+};
+
+let picked = new Set();
+try {
+  picked = new Set(JSON.parse(localStorage.getItem("baby-name-picks") || "[]"));
+} catch (err) {
+  picked = new Set();
+}
+
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, ch => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[ch]));
+}
+
+const TONE_MAP = {
+  "ā": 1, "á": 2, "ǎ": 3, "à": 4,
+  "ē": 1, "é": 2, "ě": 3, "è": 4,
+  "ī": 1, "í": 2, "ǐ": 3, "ì": 4,
+  "ō": 1, "ó": 2, "ǒ": 3, "ò": 4,
+  "ū": 1, "ú": 2, "ǔ": 3, "ù": 4,
+  "ǖ": 1, "ǘ": 2, "ǚ": 3, "ǜ": 4
+};
+
+function toneOf(pyWord) {
+  for (const ch of pyWord) {
+    if (TONE_MAP[ch] !== undefined) return TONE_MAP[ch];
+  }
+  return 0;
+}
+
+function pinyinParts(pyStr) {
+  return pyStr.trim().split(/\s+/).map(w => w.trim()).filter(Boolean);
+}
+
+function tonesFor(pyStr) {
+  return pinyinParts(pyStr).map(toneOf);
+}
+
+function surnameInfo(surname) {
+  if (!surname) return null;
+  if (surname.length >= 2 && COMPOUND_SURNAMES[surname]) {
+    return { py: COMPOUND_SURNAMES[surname] };
+  }
+  if (surname.length === 1 && SURNAMES[surname]) {
+    return { py: SURNAMES[surname] };
+  }
+  return null;
+}
+
+function fullNameMeta(surname, n) {
+  const sInfo = surnameInfo(surname);
+  if (surname && !sInfo) return null;
+  const nameTones = tonesFor(n.py);
+  const tones = sInfo ? [...tonesFor(sInfo.py), ...nameTones] : nameTones;
+  const nonZero = tones.filter(t => t !== 0);
+  const unique = new Set(nonZero).size;
+  let hint = "";
+  if (nonZero.length >= 3) {
+    if (unique === 1) hint = "声调偏平";
+    else if (unique === nonZero.length) hint = "声调有起伏";
+  }
+  return {
+    py: sInfo ? sInfo.py + " " + n.py : n.py,
+    toneText: tones.join("-"),
+    hint
+  };
+}
+
+function total(n) {
+  return n.sc.reduce((sum, v) => sum + v, 0);
+}
+
+function filtered() {
+  const gender = els.gender.value;
+  const style = els.style.value;
+  const folkOnly = els.folk.checked;
+  const recOnly = els.rec.checked;
+  const sortMode = els.sort.value;
+  let list = NAMES.filter(n => (
+    (gender === "all" || n.g === gender) &&
+    (style === "all" || n.tags.includes(style)) &&
+    (!folkOnly || n.horse) &&
+    (!recOnly || n.rec)
+  ));
+  if (sortMode === "yin") {
+    list = list.slice().sort((a, b) => b.sc[0] - a.sc[0]);
+  } else if (sortMode === "su") {
+    list = list.slice().sort((a, b) => b.sc[4] - a.sc[4]);
+  } else {
+    list = list.slice().sort((a, b) => total(b) - total(a));
+  }
+  return list;
+}
+
+function cardHTML(n, surname) {
+  const full = surname ? surname + n.n : n.n;
+  const meta = fullNameMeta(surname, n);
+  const pyLine = meta ? meta.py : n.py;
+  const toneLine = meta
+    ? "声调 " + meta.toneText + (meta.hint ? " · " + meta.hint : "")
+    : (surname ? "姓氏拼音待补" : "");
+  const bars = SCORE_NAMES.map((label, i) =>
+    `<div class="score"><span>${label}</span><div class="bar"><div class="fill" style="width:${n.sc[i] * 20}%"></div></div><span>${n.sc[i]}</span></div>`
+  ).join("");
+  const tags = n.tags.map(t => `<span class="tag">${esc(t)}</span>`).join("");
+  const active = picked.has(n.n);
+  return `<article class="card">
+    <div class="card-head">
+      <div>
+        <div class="name">${esc(full)}</div>
+        <div class="pinyin">${esc(pyLine)}${toneLine ? `<div class="tone">${esc(toneLine)}</div>` : ""}</div>
+      </div>
+      <span class="badge">${esc(n.g)}</span>
+    </div>
+    <div class="tags">${tags}</div>
+    <div class="origin">${esc(n.src)}</div>
+    <div class="scores">${bars}</div>
+    <div class="note">${esc(n.note)}</div>
+    <div class="actions">
+      <button type="button" class="${active ? "is-picked" : ""}" aria-pressed="${active}" data-name="${esc(n.n)}">${active ? "已选" : "候选"}</button>
+    </div>
+  </article>`;
+}
+
+function renderPicks(surname) {
+  const items = NAMES.filter(n => picked.has(n.n));
+  els.pickedCount.textContent = items.length;
+  els.pickedList.innerHTML = items.length
+    ? items.map(n => {
+        const full = surname ? surname + n.n : n.n;
+        return `<span class="pick-chip"><span>${esc(full)} · ${total(n)} 分</span><button type="button" data-name="${esc(n.n)}" aria-label="移除${esc(full)}">移除</button></span>`;
+      }).join("")
+    : '<div class="empty">尚未选择</div>';
+}
+
+function renderCompare(surname) {
+  const items = NAMES.filter(n => picked.has(n.n));
+  els.compareBox.hidden = items.length === 0;
+  if (!items.length) return;
+  els.compareTableBody.innerHTML = items.map(n => {
+    const full = surname ? surname + n.n : n.n;
+    const meta = fullNameMeta(surname, n);
+    const tone = meta ? meta.toneText : (surname ? "待补" : "");
+    const scores = SCORE_NAMES.map((label, i) => `<span class="num">${label}${n.sc[i]}</span>`).join(" ");
+    return `<tr>
+      <td><strong>${esc(full)}</strong><div class="pinyin">${esc(meta ? meta.py : n.py)}</div></td>
+      <td>${esc(n.src)}</td>
+      <td class="num">${esc(tone)}</td>
+      <td>${scores}</td>
+      <td>${esc(n.note)}</td>
+    </tr>`;
+  }).join("");
+}
+
+function render() {
+  const surname = els.surname.value.trim();
+  const list = filtered();
+  els.count.textContent = list.length;
+  els.fullnameText.textContent = surname || "—";
+  const sInfo = surnameInfo(surname);
+  els.fullnameMeta.textContent = surname
+    ? (sInfo ? sInfo.py + " · 声调 " + tonesFor(sInfo.py).join("-") : "姓氏拼音待补")
+    : "—";
+  els.grid.innerHTML = list.length
+    ? list.map(n => cardHTML(n, surname)).join("")
+    : '<div class="empty">没有符合条件的结果</div>';
+  renderPicks(surname);
+  renderCompare(surname);
+}
+
+function togglePick(name) {
+  if (picked.has(name)) {
+    picked.delete(name);
+  } else {
+    picked.add(name);
+  }
+  localStorage.setItem("baby-name-picks", JSON.stringify([...picked]));
+  render();
+}
+
+function onClick(e) {
+  const btn = e.target.closest("button[data-name]");
+  if (btn) togglePick(btn.dataset.name);
+}
+
+function fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.position = "fixed";
+  ta.style.opacity = "0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+  } catch (err) {
+    // 无操作权限时保持页面可用
+  }
+  ta.remove();
+}
+
+function copyCompareText() {
+  const surname = els.surname.value.trim();
+  const items = NAMES.filter(n => picked.has(n.n));
+  if (!items.length) return false;
+  const lines = items.map(n => {
+    const full = surname ? surname + n.n : n.n;
+    const meta = fullNameMeta(surname, n);
+    return full + " " + (meta ? meta.py : n.py) + "｜" + total(n) + "分｜" + n.src + "｜" + n.note;
+  });
+  const text = "候选对比\n" + lines.join("\n");
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).catch(() => fallbackCopy(text));
+  } else {
+    fallbackCopy(text);
+  }
+  return true;
+}
+
+["gender", "style", "sort"].forEach(id => $(id).addEventListener("change", render));
+els.folk.addEventListener("change", render);
+els.rec.addEventListener("change", render);
+els.surname.addEventListener("input", render);
+els.grid.addEventListener("click", onClick);
+els.pickedList.addEventListener("click", onClick);
+els.copyCompare.addEventListener("click", () => {
+  const ok = copyCompareText();
+  if (!ok) return;
+  const old = els.copyCompare.textContent;
+  els.copyCompare.textContent = "已复制";
+  setTimeout(() => {
+    els.copyCompare.textContent = old;
+  }, 1200);
+});
+
+render();
+</script>
+</body>
+</html>
