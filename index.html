@@ -249,6 +249,7 @@ button.is-picked {
     </div>
     <div class="controls">
       <label class="field">姓氏<input id="surname" type="text" maxlength="4" autocomplete="off"></label>
+      <label class="field">屏蔽字<input id="blocked" type="text" maxlength="12" autocomplete="off"></label>
       <label class="field">性别
         <select id="gender">
           <option value="all">不限</option>
@@ -273,8 +274,10 @@ button.is-picked {
       </label>
       <label class="check"><input id="folk" type="checkbox">马年友好</label>
       <label class="check"><input id="rec" type="checkbox">本命推荐</label>
+      <label class="check"><input id="fitOnly" type="checkbox">八字优先</label>
       <label class="field">排序
         <select id="sort">
+          <option value="fit" selected>八字契合</option>
           <option value="total">综合分</option>
           <option value="yin">音韵分</option>
           <option value="su">重名友好</option>
@@ -284,7 +287,7 @@ button.is-picked {
   </header>
 
   <section class="summary" aria-label="概览">
-    <div class="stat"><span id="count">92</span><small>候选</small></div>
+    <div class="stat"><span id="count">116</span><small>候选</small></div>
     <div class="stat"><span id="pickedCount">0</span><small>已选</small></div>
     <div class="fullname">
       <div class="fullname-main"><span>全名</span><strong id="fullnameText">—</strong></div>
@@ -412,7 +415,31 @@ const NAMES = [
   { n: "书禾", g: "女", py: "shū hé", src: "书 + 禾稼", tags: ["书卷", "自然", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "书为文，禾为谷；书香与丰禾并见。" },
   { n: "禾宁", g: "女", py: "hé níng", src: "禾稼安宁", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "禾为嘉谷，宁为安宁；丰收平和之象。" },
   { n: "安禾", g: "女", py: "ān hé", src: "安顺禾熟", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "安为安稳，禾为嘉谷；平安丰熟。" },
-  { n: "予禾", g: "女", py: "yǔ hé", src: "给予禾丰", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "予为给予，禾为嘉谷；丰足温厚。" }
+  { n: "予禾", g: "女", py: "yǔ hé", src: "给予禾丰", tags: ["自然", "温柔", "现代"], sc: [5, 4, 5, 3, 4, 4], horse: true, fit: "中", fitText: "予为给予，禾为嘉谷；丰足温厚。" },
+  { n: "清芷", g: "女", py: "qīng zhǐ", src: "清水白芷", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "清为水，芷为香草；水润香草，契合喜水。", note: "水润清芳。" },
+  { n: "沁芷", g: "女", py: "qìn zhǐ", src: "沁水白芷", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沁为水渗，芷为香草；润泽清芳。", note: "沁润香草。" },
+  { n: "澄芷", g: "女", py: "chéng zhǐ", src: "澄水白芷", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "澄为水清，芷为香草；清澄含芳。", note: "清澄香草。" },
+  { n: "沐芷", g: "女", py: "mù zhǐ", src: "沐水白芷", tags: ["自然", "清新", "文雅"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沐为水润，芷为香草；沐泽含芳。", note: "沐润香草。" },
+  { n: "清荷", g: "女", py: "qīng hé", src: "清水荷华", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "清为水，荷为水生之花；水润荷清。", note: "清水荷华。" },
+  { n: "雨荷", g: "女", py: "yǔ hé", src: "雨润荷华", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "雨为水，荷为花；雨润荷华，应调候。", note: "雨润荷华。" },
+  { n: "露荷", g: "女", py: "lù hé", src: "晨露荷华", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "露为水，荷为花；晨露润荷，清润。", note: "晨露荷华。" },
+  { n: "沁荷", g: "女", py: "qìn hé", src: "沁水荷华", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沁为水渗，荷为花；沁润荷华。", note: "沁润荷华。" },
+  { n: "清梧", g: "女", py: "qīng wú", src: "清水梧桐", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "清为水，梧为梧桐；水润梧青。", note: "清水梧桐。" },
+  { n: "雨桐", g: "女", py: "yǔ tóng", src: "雨润梧桐", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "雨为水，桐为木；雨润梧桐。", note: "雨润梧桐。" },
+  { n: "沐桐", g: "女", py: "mù tóng", src: "沐水梧桐", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沐为水润，桐为木；沐泽桐青。", note: "沐润梧桐。" },
+  { n: "沁桐", g: "女", py: "qìn tóng", src: "沁水梧桐", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沁为水渗，桐为木；沁润梧桐。", note: "沁润梧桐。" },
+  { n: "清竹", g: "女", py: "qīng zhú", src: "清水修竹", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "清为水，竹为修竹；水润竹青。", note: "清水修竹。" },
+  { n: "雨竹", g: "女", py: "yǔ zhú", src: "雨润修竹", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "雨为水，竹为修竹；雨润竹秀。", note: "雨润修竹。" },
+  { n: "露竹", g: "女", py: "lù zhú", src: "晨露修竹", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "露为水，竹为修竹；露润竹清。", note: "晨露修竹。" },
+  { n: "沐竹", g: "女", py: "mù zhú", src: "沐水修竹", tags: ["自然", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "沐为水润，竹为修竹；沐泽竹秀。", note: "沐润修竹。" },
+  { n: "清月", g: "女", py: "qīng yuè", src: "清水月华", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "清为水，月为清辉；水润月明，音律清亮。", note: "清辉月华。" },
+  { n: "沁月", g: "女", py: "qìn yuè", src: "沁水月华", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "沁为水渗，月为清辉；沁润月明。", note: "沁润月华。" },
+  { n: "澄月", g: "女", py: "chéng yuè", src: "澄水月华", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "澄为水清，月为清辉；澄水映月。", note: "澄水月华。" },
+  { n: "沐月", g: "女", py: "mù yuè", src: "沐水月华", tags: ["文雅", "清新", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: false, fit: "高", fitText: "沐为水润，月为清辉；沐泽月明。", note: "沐润月华。" },
+  { n: "泽兰", g: "女", py: "zé lán", src: "泽水兰芳", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "泽为水泽，兰为香草；泽润兰芳。", note: "泽润兰芳。" },
+  { n: "润兰", g: "女", py: "rùn lán", src: "润泽兰芳", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 4, 4, 4], horse: true, fit: "高", fitText: "润为水润，兰为香草；润泽含芳。", note: "润泽兰芳。" },
+  { n: "汀芷", g: "女", py: "tīng zhǐ", src: "汀水白芷", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "汀为水边，芷为香草；水边含芷。", note: "水边白芷。" },
+  { n: "沅兰", g: "女", py: "yuán lán", src: "《楚辞》沅有芷兮澧有兰", tags: ["自然", "文雅", "古典"], sc: [5, 5, 5, 5, 4, 4], horse: true, fit: "高", fitText: "沅为水名，兰为香草；楚辞典据明确。", note: "沅水兰芳。" }
 ];
 
 const DETAILS = {
@@ -505,10 +532,12 @@ const COMPOUND_SURNAMES = {
 const $ = id => document.getElementById(id);
 const els = {
   surname: $("surname"),
+  blocked: $("blocked"),
   gender: $("gender"),
   style: $("style"),
   folk: $("folk"),
   rec: $("rec"),
+  fitOnly: $("fitOnly"),
   sort: $("sort"),
   grid: $("grid"),
   count: $("count"),
@@ -597,14 +626,22 @@ function filtered() {
   const style = els.style.value;
   const folkOnly = els.folk.checked;
   const recOnly = els.rec.checked;
+  const fitOnly = els.fitOnly.checked;
   const sortMode = els.sort.value;
+  const blockedChars = new Set(els.blocked.value.trim().split(""));
+  const fitRank = { "高": 1, "中高": 2, "中": 3, "慎": 4 };
+  const nameFit = n => n.fit || (DETAILS[n.n] ? DETAILS[n.n].fit : "中");
   let list = NAMES.filter(n => (
     (gender === "all" || n.g === gender) &&
     (style === "all" || n.tags.includes(style)) &&
     (!folkOnly || n.horse) &&
-    (!recOnly || n.rec)
+    (!recOnly || n.rec) &&
+    (!fitOnly || fitRank[nameFit(n)] <= 2) &&
+    [...blockedChars].every(ch => !n.n.includes(ch))
   ));
-  if (sortMode === "yin") {
+  if (sortMode === "fit") {
+    list = list.slice().sort((a, b) => fitRank[nameFit(a)] - fitRank[nameFit(b)] || total(b) - total(a));
+  } else if (sortMode === "yin") {
     list = list.slice().sort((a, b) => b.sc[0] - a.sc[0]);
   } else if (sortMode === "su") {
     list = list.slice().sort((a, b) => b.sc[4] - a.sc[4]);
@@ -760,7 +797,9 @@ function copyCompareText() {
 ["gender", "style", "sort"].forEach(id => $(id).addEventListener("change", render));
 els.folk.addEventListener("change", render);
 els.rec.addEventListener("change", render);
+els.fitOnly.addEventListener("change", render);
 els.surname.addEventListener("input", render);
+els.blocked.addEventListener("input", render);
 els.grid.addEventListener("click", onClick);
 els.pickedList.addEventListener("click", onClick);
 els.copyCompare.addEventListener("click", () => {
