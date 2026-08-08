@@ -244,6 +244,50 @@ button.is-picked {
 }
 .diag-line { margin: 0; font-size: 13px; color: #40534e; line-height: 1.7; }
 .diag-line strong { color: #22302d; font-weight: 500; }
+.viz-bars {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(88px, 1fr));
+  gap: 8px 12px;
+  margin: 4px 0;
+}
+.viz-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  color: #40534e;
+}
+.viz-track {
+  height: 10px;
+  background: #e8efec;
+  border-radius: 999px;
+  overflow: hidden;
+}
+.viz-fill {
+  height: 100%;
+  border-radius: 999px;
+}
+.viz-good { background: #0f766e; }
+.viz-mid { background: #d9a441; }
+.viz-hot { background: #c2574a; }
+.viz-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  font-size: 12px;
+  color: #5d716c;
+}
+.viz-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 4px;
+  vertical-align: -1px;
+}
+.viz-legend i.viz-good { background: #0f766e; }
+.viz-legend i.viz-mid { background: #d9a441; }
+.viz-legend i.viz-hot { background: #c2574a; }
 @media (max-width: 720px) {
   .summary { grid-template-columns: 1fr 1fr; }
   .fullname { grid-column: 1 / -1; }
@@ -564,6 +608,7 @@ const WOOD_CHARS = "木林森禾竹桐柏楠梧荷芷芃兰芸若华草叶松梅
 const FIRE_CHARS = "火炎焱煜炜烨曦暄照昱昊晴晟夏烈燃".split("");
 const EARTH_CHARS = "土山岳峰岩石田坤垚城".split("");
 const JADE_CHARS = "玉瑶瑜珩玥琼瑾琳".split("");
+const COMMON_EXTRA_CHARS = "晨皓瑞琪琳欣悦思雅安宁和乐文华明丽春夏秋冬山水云月星辰雨露雪霜梅兰竹菊琴棋书画诗礼乐知言行书清".split("");
 
 function charElement(ch) {
   if (WATER_CHARS.includes(ch)) return "水";
@@ -585,6 +630,7 @@ const KNOWN_CHARS = new Set([
   ...FIRE_CHARS,
   ...EARTH_CHARS,
   ...JADE_CHARS,
+  ...COMMON_EXTRA_CHARS,
   ..."霄文静皇甫祖".split("")
 ]);
 
@@ -823,15 +869,23 @@ function diagnoseCustom() {
   }
   const unknown = chars.filter(ch => !KNOWN_CHARS.has(ch));
   if (unknown.length) {
-    notes.push(`暂未收录：${unknown.join("、")}。请用《通用规范汉字表》核对字形。`);
+    notes.push(`${unknown.join("、")} 不在工具内置字库中，不代表不能使用；规范字形请以《通用规范汉字表》和公安系统为准。`);
   }
   notes.push("字面五行按偏旁与常用字义推断，仅供家庭参考，不替代完整命理复核。");
   const fitClass = level === "高" ? "fit-high" : (level === "慎" ? "fit-low" : "fit-mid");
-  const elText = chars.map(ch => `${ch}：${charElement(ch)}`).join("、");
+  const bars = Object.keys(counts).map(el => {
+    const count = counts[el];
+    const cls = el === "水" || el === "金" ? "viz-good" : (el === "火" || el === "土" ? "viz-hot" : "viz-mid");
+    const pct = count ? Math.min(100, count * 25) : 0;
+    return `<div class="viz-bar"><span>${el} ${count}</span><div class="viz-track"><div class="viz-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  }).join("");
+  const elText = chars.map(ch => `${esc(ch)}：${charElement(ch)} <a href="https://www.zdic.net/hans/${encodeURIComponent(ch)}" target="_blank" rel="noopener">查字</a>`).join("、");
   box.innerHTML = `
     <div class="fit-row"><span class="fit-badge ${fitClass}">契合 ${level}</span></div>
     <p class="diag-line"><strong>全名</strong>：${esc(full)}</p>
-    <p class="diag-line"><strong>单字五行</strong>：${esc(elText)}</p>
+    <p class="diag-line"><strong>单字五行</strong>：${elText}</p>
+    <div class="viz-bars">${bars}</div>
+    <div class="viz-legend"><span><i class="viz-good"></i>水/金：喜用</span><span><i class="viz-mid"></i>木/玉/中性：看搭配</span><span><i class="viz-hot"></i>火/土：慎用</span></div>
     <p class="diag-line"><strong>八字判断</strong>：${esc(reason)}</p>
     ${notes.map(n => `<p class="diag-line"><strong>提示</strong>：${esc(n)}</p>`).join("")}
   `;
